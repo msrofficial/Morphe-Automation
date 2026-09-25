@@ -11,6 +11,15 @@ from os import getenv
 
 from src import downloader, patcher, utils
 
+try:
+    import src.adapters.apkmirror_adapter  # noqa: F401 (self-register)
+    import src.adapters.archive_adapter  # noqa: F401 (self-register)
+    from src import fetcher as _v2fetch
+
+    _V2 = True
+except Exception:
+    _V2 = False
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -38,6 +47,38 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
     inp, version, cands = None, None, []
     used = None
     for plat in order:
+        # v2 path first for archive/apkmirror, legacy fallback on error
+        if _V2 and plat in ("archive", "apkmirror"):
+            try:
+                from src.downloader import _load_app_config
+
+                cfg = _load_app_config(app_name, plat)
+                if cfg and cfg.get("package"):
+                    adapter = _v2fetch.get_adapter(plat)
+                    pinned = (cfg.get("version") or "").strip()
+                    if pinned:
+                        tries = [pinned]
+                    else:
+                        tries = utils.get_supported_versions(cfg["package"], str(cli), str(patches))
+                        try:
+                            latest = adapter.latest(app_name, {**cfg, "arch": arch})
+                            if latest and latest not in tries:
+                                tries.append(latest)
+                        except Exception:
+                            pass
+                    for ver in tries:
+                        link = adapter.link(ver, app_name, {**cfg, "arch": arch})
+                        if not link:
+                            continue
+                        dest = Path(f"{app_name}-stock-{plat}-{ver.replace(' ', '')}.apk")
+                        _v2fetch.download_url(link, dest)
+                        inp, version, cands = dest, ver, tries
+                        used = getattr(downloader, f"download_{plat}", None)
+                        break
+                if inp:
+                    break
+            except Exception as e:
+                logging.debug(f"v2 {plat} failed, legacy fallback: {e}")
         fn = getattr(downloader, f"download_{plat}", None)
         if not fn:
             continue
