@@ -144,8 +144,20 @@ jobs:
             echo "Telegram secrets not set, skipping notify"
             exit 0
           fi
-          FILES=$(ls -1 release-apks/ 2>/dev/null | head -20 | sed 's/^/- /' || echo "- (no files)")
-          MSG="Morphe-Automation $TAG published%0A%0A$FILES"
+          REPO="${{ github.repository }}"
+          TAG="$TAG"
+          NL=$'\n'
+          MSG="Morphe-Automation $TAG published${NL}${NL}"
+          for f in release-apks/*; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            # skip manifest helper file
+            if [ "$name" = "manifest.json" ]; then continue; fi
+            url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
+            MSG+="- ${url}${NL}"
+          done
+          [ "$MSG" = "Morphe-Automation $TAG published${NL}${NL}" ] && MSG+="- (no files)"
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" \
-            --data-urlencode "text=$(echo -e "$MSG")" || true
+            --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "text=${MSG}" || true
