@@ -15,5 +15,5 @@ cli.py        -> single entry: unified.json -> targets -> pipeline
 
 Rules:
 - New code never imports legacy `src.downloader` internals; legacy stays as shim until Phase 2-3 replace it.
-- Function names are domain-based (`fetch_stock`, `apply_patches`, `package_module`), not Rookie/j-hc names.
+- Function names are domain-based (`fetch_stock`, `apply_patches`, `package_module`).
 - Every phase keeps CI green: legacy path works until new path proves green via manual run.

@@ -90,7 +90,7 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
         logging.error(f"download failed for {app_name}")
         return None
 
-    # sig guard (j-hc)
+    # signature guard: archive mirrors may re-sign stock apks
     pkg = None
     for plat in order:
         cfgp = Path("apps") / plat / f"{app_name}.json"

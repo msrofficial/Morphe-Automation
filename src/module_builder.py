@@ -1,4 +1,4 @@
-"""Build Magisk module zip from patched APK (j-hc logic ported)."""
+"""Build Magisk module zip from patched APK (legacy path, see src/packager.py)."""
 import json
 import logging
 import os

@@ -1,4 +1,4 @@
-"""Build morphe patch command with j-hc extras (microg/branding/exclusive)."""
+"""Build morphe patch command with microg/branding/exclusive handling (legacy path)."""
 import logging
 from pathlib import Path
 from src import utils
