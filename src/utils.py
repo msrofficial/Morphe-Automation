@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 
 
-def run_process(command, cwd=None, capture=False, silent=False, check=True):
+def run_process(command, cwd=None, capture=False, silent=False, check=True, stream=False, shell=False):
     proc = subprocess.Popen(
         [str(c) for c in command],
         cwd=str(cwd) if cwd else None,
