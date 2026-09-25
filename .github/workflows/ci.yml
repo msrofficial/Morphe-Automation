@@ -1,0 +1,28 @@
+name: CI
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      build_matrix: ${{ steps.check.outputs.build_matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/check_updates.py
+  build:
+    needs: check
+    if: needs.check.outputs.has_updates == 'true'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit

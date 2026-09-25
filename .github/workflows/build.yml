@@ -1,0 +1,124 @@
+name: Build
+on:
+  workflow_call:
+    inputs:
+      force_full_rebuild:
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      force_full_rebuild:
+        type: boolean
+        default: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      build_matrix: ${{ steps.check.outputs.build_matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_FULL_REBUILD: ${{ inputs.force_full_rebuild }}
+        run: python scripts/check_updates.py
+  build-apps:
+    needs: check
+    if: needs.check.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.check.outputs.build_matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update && sudo apt-get install -y zip unzip
+      - name: Ensure keystore
+        run: |
+          if [ ! -f keystore/unified.jks ]; then
+            mkdir -p keystore
+            keytool -genkeypair -keystore keystore/unified.jks -alias morphe -keyalg RSA -keysize 2048 -validity 10950 -storepass morphe -keypass morphe -dname "CN=Morphe-Automation"
+          fi
+      - name: Build
+        env:
+          APP_NAME: ${{ matrix.app_name }}
+          SOURCE: ${{ matrix.source }}
+          ARCH: ${{ matrix.arch }}
+          MODE: ${{ matrix.mode }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NEXT_VER_CODE: ${{ github.run_number }}
+        run: |
+          mkdir -p build temp build_records
+          python -m src
+          for f in *.apk build/*.apk build/*.zip; do
+            [ -f "$f" ] || continue
+            APK_PATH="$f" python scripts/record_build.py || true
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ matrix.app_name }}-${{ matrix.source }}-${{ matrix.arch }}-${{ matrix.mode }}
+          path: |
+            *.apk
+            build/*.apk
+            build/*.zip
+            build_records/
+          if-no-files-found: warn
+  release:
+    needs: [check, build-apps]
+    if: needs.check.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./all
+          pattern: out-*
+      - name: Collect + manifest
+        run: |
+          mkdir -p release-apks build_records
+          find ./all -type f \( -name "*.apk" -o -name "*.zip" \) -exec cp -f {} release-apks/ \; || true
+          find ./all -path "*build_records/*.json" -exec cp -f {} build_records/ \; || true
+          ls -la release-apks/ || echo "empty"
+          python scripts/merge_manifest.py || true
+          cp -f manifest.json release-apks/ 2>/dev/null || true
+          : > keep.txt
+          for f in release-apks/*.apk release-apks/*.zip; do [ -f "$f" ] && basename "$f" >> keep.txt; done || true
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ github.run_number }}"
+          if [ -z "$(ls -A release-apks 2>/dev/null)" ]; then echo "nothing to release"; exit 1; fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-apks/* --clobber
+          else
+            gh release create "$TAG" release-apks/* --title "Morphe-Automation $TAG" --notes "Auto build $TAG" --latest=false
+          fi
+          python scripts/cleanup_old.py --release "$TAG" --keep-file keep.txt || true
+          git checkout -f update 2>/dev/null || git switch --discard-changes --orphan update
+          cp -f manifest.json ./manifest.json 2>/dev/null || echo '{"entries":{}}' > manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "manifest $TAG" || echo "no changes"
+          git push origin HEAD:update || true
