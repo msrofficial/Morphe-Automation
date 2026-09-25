@@ -21,18 +21,18 @@ def get_latest_version(app_name, cfg):
 
 
 def get_download_link(version, app_name, cfg):
-    from src import downloader as _d  # noqa
-
     dlurl = (cfg.get("dlurl") or "").rstrip("/")
     v = version.replace(" ", "")
     arch = (cfg.get("arch") or "all").replace(" ", "")
+    if arch in ("universal", "all", ""):
+        wanted = ["arm64-v8a", "arm-v7a", "all", "universal"]
+    else:
+        wanted = [arch, "all"]
     r = session.get(dlurl, timeout=30)
     r.raise_for_status()
     files = re.findall(r'href="([^"]+\.(?:apk|apkm))"', r.text)
-    for f in files:
-        if f"{v}-{arch}" in f:
-            return f"{dlurl}/{f}"
-    for f in files:
-        if f"{v}-all" in f:
-            return f"{dlurl}/{f}"
+    for w in wanted:
+        for f in files:
+            if f"{v}-{w}" in f:
+                return f"{dlurl}/{f}"
     return None

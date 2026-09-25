@@ -26,12 +26,15 @@ class ArchiveAdapter(SourceAdapter):
         dlurl = (cfg.get("dlurl") or "").rstrip("/")
         v = version.replace(" ", "")
         arch = (cfg.get("arch") or "all").replace(" ", "")
+        # universal accepts any variant, prefer fullest first
+        if arch in ("universal", "all", ""):
+            wanted = ["arm64-v8a", "arm-v7a", "all", "universal"]
+        else:
+            wanted = [arch, "all"]
         html = _get(dlurl).text
         files = re.findall(r'href="([^"]+\.(?:apk|apkm))"', html)
-        for f in files:
-            if f"{v}-{arch}" in f:
-                return f"{dlurl}/{f}"
-        for f in files:
-            if f"{v}-all" in f:
-                return f"{dlurl}/{f}"
+        for w in wanted:
+            for f in files:
+                if f"{v}-{w}" in f:
+                    return f"{dlurl}/{f}"
         return None
