@@ -147,7 +147,7 @@ jobs:
           REPO="${{ github.repository }}"
           TAG="$TAG"
           NL=$'\n'
-          MSG="Morphe-Automation $TAG published ($(date +'%Y-%m-%d %H:%M UTC'))${NL}${NL}"
+          MSG="Morphe-Automation $TAG published ($(date +'%d %B %Y %H:%M UTC'))${NL}${NL}"
           for f in release-apks/*; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
@@ -156,7 +156,7 @@ jobs:
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
             MSG+="- ${url}${NL}"
           done
-          [ "$MSG" = "Morphe-Automation $TAG published ($(date +'%Y-%m-%d %H:%M UTC'))${NL}${NL}" ] && MSG+="- (no files)"
+          [ "$MSG" = "Morphe-Automation $TAG published ($(date +'%d %B %Y %H:%M UTC'))${NL}${NL}" ] && MSG+="- (no files)"
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" \
             --data-urlencode "disable_web_page_preview=true" \
