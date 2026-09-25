@@ -1,5 +1,7 @@
 #!/system/bin/sh
-RVPATH=/data/adb/rvhc/${MODDIR##*/}.apk
+# Morphe-Automation on-device helpers (own implementation).
+STORE_PATH=/data/adb/rvhc/${MODDIR##*/}.apk
+RVPATH=$STORE_PATH # compat alias
 . "$MODDIR/config"
 ch_desc() {
 	sed -i "s|^description=.*|description=${1}|" "$MODDIR/module.prop"

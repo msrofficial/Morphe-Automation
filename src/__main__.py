@@ -104,12 +104,22 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
         logging.warning(f"signature mismatch for {app_name}, continuing (archive source trusted)")
         # do not skip: archive.org stock may be re-signed; patcher will verify
 
-    inc, exc = patcher.read_patch_rules(app_name, source)
-    microg, branding = "", ""
     try:
-        microg, branding = patcher.detect_microg_branding(str(cli), str(patches), pkg or "")
-    except Exception as e:
-        logging.debug(f"branding detect failed: {e}")
+        from src import patch_v2 as _pv2
+
+        inc, exc = _pv2.read_rules(app_name, source)
+        microg, branding = "", ""
+        try:
+            microg, branding = _pv2.find_special_patches(str(cli), str(patches))
+        except Exception as e:
+            logging.debug(f"special patch detect failed: {e}")
+    except Exception:
+        inc, exc = patcher.read_patch_rules(app_name, source)
+        microg, branding = "", ""
+        try:
+            microg, branding = patcher.detect_microg_branding(str(cli), str(patches), pkg or "")
+        except Exception as e:
+            logging.debug(f"branding detect failed: {e}")
     if microg:
         if build_mode == "apk":
             inc += ["-e", microg]
@@ -184,10 +194,16 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
             print(f"BUILT {final}")
             return str(final)
         else:
-            # module path handled by module_builder
-            from src import module_builder
+            # v2 packager first, legacy module_builder fallback
+            try:
+                from src import packager as _pkg
 
-            z = module_builder.build_module(out, app_name, source, arch, version, app_cfg, pkg or "")
+                z = _pkg.package_module(out, app_name, arch, version, app_cfg, pkg or "")
+            except Exception as e:
+                logging.debug(f"v2 packager failed, legacy fallback: {e}")
+                from src import module_builder
+
+                z = module_builder.build_module(out, app_name, source, arch, version, app_cfg, pkg or "")
             print(f"BUILT {z}")
             return str(z)
     return None
