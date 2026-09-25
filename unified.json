@@ -9,7 +9,7 @@
     {
       "app_name": "youtube",
       "source": "morphe",
-      "arches": ["arm64-v8a", "armeabi-v7a", "universal"],
+      "arches": ["universal"],
       "build_modes": ["apk", "module"],
       "version": "auto",
       "dpi": "nodpi",
@@ -21,7 +21,7 @@
     {
       "app_name": "youtube-music",
       "source": "morphe",
-      "arches": ["arm64-v8a", "armeabi-v7a", "universal"],
+      "arches": ["universal"],
       "build_modes": ["apk"],
       "version": "auto",
       "dpi": "nodpi",
