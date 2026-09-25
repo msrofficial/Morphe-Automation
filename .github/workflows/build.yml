@@ -104,6 +104,13 @@ jobs:
           rm -f release-apks/com.*.apk release-apks/com.*.apkm 2>/dev/null || true
           find ./all -path "*build_records/*.json" -exec cp -f {} build_records/ \; || true
           ls -la release-apks/ || echo "empty"
+          # carry history: previous manifest from update branch becomes merge base
+          git fetch origin update:update-ref 2>/dev/null || true
+          if git show update-ref:manifest.json > new_manifest.json 2>/dev/null; then
+            echo "carried manifest history from update branch"
+          else
+            rm -f new_manifest.json
+          fi
           python scripts/merge_manifest.py || true
           cp -f manifest.json release-apks/ 2>/dev/null || true
           : > keep.txt

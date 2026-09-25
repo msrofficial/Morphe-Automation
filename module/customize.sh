@@ -10,7 +10,7 @@ elif [ "$ARCH" = "arm64" ]; then ARCH_LIB=arm64-v8a
 elif [ "$ARCH" = "x86" ]; then ARCH_LIB=x86
 elif [ "$ARCH" = "x64" ]; then ARCH_LIB=x86_64
 else abort "ERROR: unreachable: ${ARCH}"; fi
-set_perm_recursive "$MODPATH/bin" 0 0 0755 0777
+if [ -d "$MODPATH/bin" ]; then set_perm_recursive "$MODPATH/bin" 0 0 0755 0777; fi
 umount_all
 if ! OP=$(dumpsys package "$PKG_NAME") || [ -z "$OP" ]; then
 	if pmex install-existing "$PKG_NAME" >/dev/null 2>&1; then
