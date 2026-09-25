@@ -68,19 +68,22 @@ jobs:
         run: |
           mkdir -p build temp build_records
           python -m src
-          for f in *.apk build/*.apk build/*.zip; do
+          # remove stock leftovers (com.google.* etc) so only final outputs are recorded
+          rm -f com.*.apk com.*.apkm 2>/dev/null || true
+          for f in *-morphe-*.apk build/*.apk build/*.zip; do
             [ -f "$f" ] || continue
             APK_PATH="$f" python scripts/record_build.py || true
           done
+          if [ -z "$(ls -A build 2>/dev/null)" ] && [ -z "$(ls *-morphe-*.apk 2>/dev/null)" ]; then echo "BUILD FAILED: no final outputs"; exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
           name: out-${{ matrix.app_name }}-${{ matrix.source }}-${{ matrix.arch }}-${{ matrix.mode }}
           path: |
-            *.apk
+            *-morphe-*.apk
             build/*.apk
             build/*.zip
             build_records/
-          if-no-files-found: warn
+          if-no-files-found: error
   release:
     needs: [check, build-apps]
     if: needs.check.outputs.has_updates == 'true'
@@ -96,7 +99,9 @@ jobs:
       - name: Collect + manifest
         run: |
           mkdir -p release-apks build_records
-          find ./all -type f \( -name "*.apk" -o -name "*.zip" \) -exec cp -f {} release-apks/ \; || true
+          find ./all -type f \( -name "*-morphe-*.apk" -o -name "*-module-*.zip" -o -name "build/*.apk" \) -exec cp -f {} release-apks/ \; || true
+          # drop any stock leftovers that slipped in
+          rm -f release-apks/com.*.apk release-apks/com.*.apkm 2>/dev/null || true
           find ./all -path "*build_records/*.json" -exec cp -f {} build_records/ \; || true
           ls -la release-apks/ || echo "empty"
           python scripts/merge_manifest.py || true

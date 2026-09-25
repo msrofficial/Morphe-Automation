@@ -64,7 +64,7 @@ jobs:
         with:
           name: manual-${{ inputs.app_name }}-${{ inputs.arch }}-${{ inputs.mode }}
           path: |
-            *.apk
+            *-morphe-*.apk
             build/*.apk
             build/*.zip
           if-no-files-found: error
