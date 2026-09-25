@@ -154,10 +154,11 @@ jobs:
             # skip manifest helper file
             if [ "$name" = "manifest.json" ]; then continue; fi
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
-            MSG+="- ${url}${NL}"
+            MSG+="- <a href=\"${url}\">${name}</a>${NL}"
           done
           [ "$MSG" = "Morphe-Automation $TAG published ($(date +'%d %B %Y %H:%M UTC'))${NL}${NL}" ] && MSG+="- (no files)"
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" \
             --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "parse_mode=HTML" \
             --data-urlencode "text=${MSG}" || true
