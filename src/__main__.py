@@ -34,7 +34,7 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
         logging.error(f"CLI/patches missing for {source}: {[f.name for f in files]}")
         return None
 
-    order = ["apkmirror", "archive", "uptodown", "apkpure", "direct"]
+    order = ["archive", "apkmirror", "uptodown", "apkpure", "direct"]
     inp, version, cands = None, None, []
     used = None
     for plat in order:

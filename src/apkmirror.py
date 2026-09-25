@@ -1,13 +1,25 @@
 """APKMirror fetcher via HTML parsing."""
+import random
 import re
+import time
 from bs4 import BeautifulSoup
 from src.session import session
 
 
-def _page(url):
-    r = session.get(url, timeout=30)
-    r.raise_for_status()
-    return r.text
+def _page(url, retries=3):
+    last = None
+    for i in range(retries):
+        try:
+            time.sleep(2 + random.random() * 3)
+            r = session.get(url, timeout=30)
+            r.raise_for_status()
+            return r.text
+        except Exception as e:
+            last = e
+            # 429 -> back off longer
+            time.sleep(5 * (i + 1) + random.random() * 5)
+            continue
+    raise last
 
 
 def get_latest_version(app_name, cfg):

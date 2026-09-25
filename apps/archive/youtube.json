@@ -1,0 +1,10 @@
+{
+  "name": "youtube",
+  "package": "com.google.android.youtube",
+  "version": "",
+  "arch": "universal",
+  "type": "APK",
+  "dpi": "nodpi",
+  "org": "youtube",
+  "dlurl": "https://archive.org/download/jhc-apks/apks/com.google.android.youtube"
+}

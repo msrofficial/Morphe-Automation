@@ -1,0 +1,10 @@
+{
+  "name": "youtube-music",
+  "package": "com.google.android.apps.youtube.music",
+  "version": "",
+  "arch": "universal",
+  "type": "APK",
+  "dpi": "nodpi",
+  "org": "youtube-music",
+  "dlurl": "https://archive.org/download/jhc-apks/apks/com.google.android.apps.youtube.music"
+}
