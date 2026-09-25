@@ -1,10 +1,7 @@
 name: Build
 on:
-  workflow_call:
-    inputs:
-      force_full_rebuild:
-        type: boolean
-        default: false
+  schedule:
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       force_full_rebuild:
