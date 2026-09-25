@@ -1,0 +1,13 @@
+*.apk
+*.zip
+/temp
+/build
+/tools
+*.tmp.zip
+build_matrix.json
+carry_over.json
+new_manifest.json
+manifest.json
+build.md
+__pycache__/
+*.pyc

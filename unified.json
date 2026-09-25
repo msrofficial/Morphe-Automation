@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "patches-source": "morphe",
+    "cli-source": "morphe",
+    "compression-level": 9,
+    "remove-integrations-checks": true
+  },
+  "apps": [
+    {
+      "app_name": "youtube",
+      "source": "morphe",
+      "arches": ["arm64-v8a"],
+      "build_modes": ["apk", "module"],
+      "version": "auto",
+      "dpi": "nodpi",
+      "include_stock": "merged",
+      "enable_update_checks": false,
+      "module_prop_name": "youtube-morphe",
+      "patcher_args": ""
+    },
+    {
+      "app_name": "youtube-music",
+      "source": "morphe",
+      "arches": ["arm64-v8a"],
+      "build_modes": ["apk"],
+      "version": "auto",
+      "dpi": "nodpi",
+      "include_stock": "merged",
+      "enable_update_checks": false,
+      "module_prop_name": "music-morphe",
+      "patcher_args": ""
+    }
+  ]
+}
