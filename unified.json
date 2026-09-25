@@ -22,7 +22,7 @@
       "app_name": "youtube-music",
       "source": "morphe",
       "arches": ["universal"],
-      "build_modes": ["apk"],
+      "build_modes": ["apk", "module"],
       "version": "auto",
       "dpi": "nodpi",
       "include_stock": "merged",
