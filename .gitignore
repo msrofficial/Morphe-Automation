@@ -2,7 +2,6 @@
 *.zip
 /temp
 /build
-/tools
 *.tmp.zip
 build_matrix.json
 carry_over.json
