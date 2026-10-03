@@ -41,6 +41,18 @@
       "enable_update_checks": false,
       "module_prop_name": "reddit-morphe",
       "patcher_args": ""
+    },
+    {
+      "app_name": "gboard",
+      "source": "gboard",
+      "arches": ["universal"],
+      "build_modes": ["apk"],
+      "version": "auto",
+      "dpi": "nodpi",
+      "include_stock": "merged",
+      "enable_update_checks": false,
+      "module_prop_name": "gboard-morphe",
+      "patcher_args": ""
     }
   ]
 }

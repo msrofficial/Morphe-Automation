@@ -14,7 +14,7 @@ Unified Morphe builder — patched APK + Magisk modules with fully automated dai
   </a>
 </p>
 
-Currently builds YouTube, YouTube Music and Reddit in `universal` arch, each as APK and Magisk module. Configuration is data-driven; no code change is needed to add versions, arches, or modes.
+Currently builds YouTube, YouTube Music and Reddit (`universal`, APK + Magisk module) plus Gboard (`universal`, APK only, jasonwu patches). Configuration is data-driven; no code change is needed to add versions, arches, or modes.
 
 ## Contents
 
@@ -73,6 +73,7 @@ Termux:
    - `youtube-universal-morphe-v*.apk`
    - `youtube-music-universal-morphe-v*.apk`
    - `reddit-universal-morphe-v*.apk`
+   - `gboard-universal-morphe-v*.apk`
    - `youtube-morphe-module-v*-universal.zip`
    - `music-morphe-module-v*-universal.zip`
    - `reddit-morphe-module-v*-universal.zip`
@@ -87,7 +88,7 @@ Termux:
 - `sig.txt` — optional signature whitelist.
 - `keystore/unified.jks` — APK signing key, auto-generated in CI if missing.
 
-Example target matrix from default config: 3 apps x 1 arch x 2 modes = 6 targets.
+Example target matrix from default config: 3 apps x 1 arch x 2 modes + Gboard x 1 arch x 1 mode = 7 targets.
 
 ## How it works
 

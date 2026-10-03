@@ -1,0 +1,10 @@
+{
+  "name": "gboard",
+  "package": "com.google.android.inputmethod.latin",
+  "version": "",
+  "arch": "universal",
+  "type": "APK",
+  "dpi": "nodpi",
+  "org": "gboard",
+  "dlurl": "https://archive.org/download/jhc-apks/apks/com.google.android.inputmethod.latin"
+}
