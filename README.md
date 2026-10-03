@@ -6,44 +6,37 @@ Unified Morphe builder — patched APK + Magisk modules with fully automated dai
 [![Build](https://github.com/msrofficial/Morphe-Automation/actions/workflows/build.yml/badge.svg)](https://github.com/msrofficial/Morphe-Automation/actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/msrofficial/Morphe-Automation)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/msrofficial/Morphe-Automation?include_prereleases)](https://github.com/msrofficial/Morphe-Automation/releases)
+[![Telegram](https://img.shields.io/badge/Telegram-Morphe_Builds-blue?logo=telegram)](https://t.me/morpheautomation)
 
-## ✨ Features
+## Features
 
-- 📱 Patched **APK** (with MicroG support) + 📦 **Magisk modules** (root, no MicroG needed)
-- 🔄 Auto daily builds via GitHub Actions (schedule + manual trigger)
-- 📦 Multi-source stock fetcher with fallback: Archive → APKMirror → Uptodown / APKPure / Direct
-- 🧩 Auto patch planning (MicroG / branding handling for APK vs module)
-- 🔏 Auto APK signing + signature guard + integrity check
-- 🧹 Smart release cleanup — keep newest 3 releases, prune old files only (releases kept)
-- 📢 Telegram release notification with download links (HTML)
-- 📜 `manifest.json` history carried on `update` branch
+- Patched APK (with MicroG support) + Magisk modules (root, no MicroG needed)
+- Auto daily builds via GitHub Actions (schedule + manual trigger)
+- Multi-source stock fetcher with fallback: Archive to APKMirror to Uptodown / APKPure / Direct
+- Auto patch planning (MicroG / branding handling for APK vs module)
+- Auto APK signing + signature guard + integrity check
+- Smart release cleanup — keep newest 3 releases, prune old files only (releases kept)
+- Telegram release notification with download links (HTML)
+- manifest.json history carried on update branch
 
-## 📢 Telegram
+## Telegram
 
-| Channel | Link |
-| ------- | ---- |
-| 🚀 Morphe Automation Builds | https://t.me/morpheautomation |
-| 📂 MSR IndeX (All in One) — all files & tutorials | https://t.me/msrindex |
-| 🧩 MSR PatcH | https://t.me/msrpatch |
-| 💬 MSR PatcH Discussion | https://t.me/msrpatchchat |
-| 📦 MSR-PatcH Apps (Backup) | https://t.me/msrpatchapps |
+Build updates: https://t.me/morpheautomation
 
-> Tip: Need everything in one place? Join **MSR IndeX** — all files + tutorials are indexed there.
-
-## 🚀 Quick start
+## Quick start
 
 1. Edit `unified.json` — enable apps, set `build_modes` (`apk`, `module`)
-2. Run manual workflow (`Actions → Manual Build`) or locally:
+2. Run manual workflow (`Actions -> Manual Build`) or locally:
    ```bash
    ./build.sh
    # or filtered:
    APP_NAME=youtube SOURCE=morphe ARCH=universal MODE=apk ./build.sh
    ```
-3. Get outputs from **Releases**: `*-morphe-*.apk` + `*-module-*.zip` + `manifest.json`
+3. Get outputs from Releases: `*-morphe-*.apk` + `*-module-*.zip` + `manifest.json`
 
 See `unified.json` for full schema and `docs/ARCHITECTURE.md` for design.
 
-## ⚙️ Configuration
+## Configuration
 
 `unified.json` example:
 
@@ -68,12 +61,12 @@ See `unified.json` for full schema and `docs/ARCHITECTURE.md` for design.
 - `sources/*.json` — Morphe CLI / patches GitHub releases
 - `patches/*.txt` — `+include` / `-exclude` patch rules (`# default` = use defaults)
 
-## 🏗️ How it works
+## How it works
 
 ```
-unified.json → targets → download stock → merge bundle → strip libs
-  → patch (morphe-cli) → sign (apk) / pack module (zip)
-  → release + manifest + telegram notify + cleanup
+unified.json -> targets -> download stock -> merge bundle -> strip libs
+  -> patch (morphe-cli) -> sign (apk) / pack module (zip)
+  -> release + manifest + telegram notify + cleanup
 ```
 
 - Entry: `python -m src` (`src/__main__.py`, `src/cli.py`, `src/models.py`)
@@ -82,16 +75,16 @@ unified.json → targets → download stock → merge bundle → strip libs
 - Package: `src/packager.py` / `src/module_builder.py` + `module/*.sh` (on-device installer)
 - Tools: `tools/tool.py` (`audit|note|join|prune`) + `scripts/*` shims
 
-## 🔨 Workflows
+## Workflows
 
-- `build.yml` — daily `06:00 UTC`: check updates → matrix build → release → manifest to `update` branch → Telegram → cleanup (`--keep-n 3`)
+- `build.yml` — daily `06:00 UTC`: check updates to matrix build to release to manifest to `update` branch to Telegram to cleanup (`--keep-n 3`)
 - `manual.yml` — on-demand single `app/source/arch/mode` build
 
-## 📋 Requirements
+## Requirements
 
 - Python 3.11 (`requirements.txt`: `requests`, `beautifulsoup4`, `PyGithub`)
 - Java 21, `zip/unzip`, `keystore/unified.jks` (auto-generated in CI if missing)
 
-## 📄 License
+## License
 
 See [LICENSE](LICENSE) and [NOTICE](NOTICE).
