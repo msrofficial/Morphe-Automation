@@ -8,6 +8,12 @@ Unified Morphe builder — patched APK + Magisk modules with fully automated dai
 [![Release](https://img.shields.io/github/v/release/msrofficial/Morphe-Automation?include_prereleases)](https://github.com/msrofficial/Morphe-Automation/releases)
 [![Telegram](https://img.shields.io/badge/Telegram-Morphe_Builds-blue?logo=telegram)](https://t.me/morpheautomation)
 
+<p align="center">
+  <a href="https://t.me/morpheautomation">
+    <img src="https://img.shields.io/badge/Join_Telegram_Channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" height="60" alt="Join Telegram Channel" />
+  </a>
+</p>
+
 ## Features
 
 - Patched APK (with MicroG support) + Magisk modules (root, no MicroG needed)
