@@ -18,7 +18,9 @@ class ApkmirrorAdapter(SourceAdapter):
     def link(self, version, app_name, cfg):
         org = cfg.get("org", "")
         name = cfg.get("name", app_name)
-        slug = version.replace(" ", "-").replace(".", "-")
+        from src.utils import base_version
+
+        slug = base_version(version).replace(" ", "-").replace(".", "-")
         page = _get(f"https://www.apkmirror.com/apk/{org}/{name}/{name}-{slug}-release/").text
         soup = BeautifulSoup(page, "html.parser")
         for a in soup.select("div.table-row.headerFont a"):

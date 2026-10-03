@@ -21,8 +21,10 @@ def get_latest_version(app_name, cfg):
 
 
 def get_download_link(version, app_name, cfg):
+    from src.utils import base_version
+
     dlurl = (cfg.get("dlurl") or "").rstrip("/")
-    v = version.replace(" ", "")
+    v = base_version(version).replace(" ", "")
     arch = (cfg.get("arch") or "all").replace(" ", "")
     if arch in ("universal", "all", ""):
         wanted = ["arm64-v8a", "arm-v7a", "all", "universal"]

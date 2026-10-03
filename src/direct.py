@@ -11,8 +11,10 @@ def get_latest_version(app_name, cfg):
 
 
 def get_download_link(version, app_name, cfg):
+    from src.utils import base_version
+
     dlurl = cfg.get("dlurl", "")
-    v = version.replace(" ", "")
+    v = base_version(version).replace(" ", "")
     arch = (cfg.get("arch") or "all").replace(" ", "")
     if f"{v}-{arch}" not in dlurl and f"{v}-all" not in dlurl:
         return None

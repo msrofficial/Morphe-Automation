@@ -17,17 +17,17 @@ _HEADERS = {
 }
 
 
-def _load(url: str, retries: int = 3):
+def _load(url: str, retries: int = 2):
     last = None
     for i in range(retries):
         try:
-            time.sleep(1.5 + random.random() * 2.0)
+            time.sleep(1.0 + random.random() * 1.5)
             r = session.get(url, headers=_HEADERS, timeout=25)
             r.raise_for_status()
             return r
         except Exception as e:
             last = e
-            time.sleep(3 * (i + 1))
+            time.sleep(2 * (i + 1))
     raise last
 
 
@@ -57,11 +57,13 @@ def get_latest_version(app_name, cfg):
 
 
 def get_download_link(version, app_name, cfg):
+    from src.utils import base_version
+
     name = (cfg.get("name") or app_name or "").strip()
     pkg = (cfg.get("package") or "").strip()
     if not version or not name or not pkg:
         return None
-    url = f"https://apkpure.com/{name}/{pkg}/download/{str(version).strip()}"
+    url = f"https://apkpure.com/{name}/{pkg}/download/{base_version(version)}"
     try:
         r = _load(url)
     except Exception as e:

@@ -32,7 +32,9 @@ def get_latest_version(app_name, cfg):
 
 
 def _slug(version: str) -> str:
-    return str(version).strip().replace(" ", "-").replace(".", "-")
+    from src.utils import base_version
+
+    return base_version(version).replace(" ", "-").replace(".", "-")
 
 
 def _row_text(a) -> str:
@@ -60,7 +62,8 @@ def get_download_link(version, app_name, cfg):
                 links.append((href, _row_text(a)))
         if links:
             break
-    # own preference: nodpi/universal rows first, then requested arch
+    # own preference: nodpi/universal rows first, then requested arch.
+    # some apps (e.g. gboard) ship no universal rows: fall back to arm64.
     def score(item):
         _, text = item
         s = 0
@@ -68,6 +71,8 @@ def get_download_link(version, app_name, cfg):
             s += 2
         if "universal" in text or "all" in text or arch in text:
             s += 2
+        elif arch in ("universal", "all", "") and "arm64-v8a" in text:
+            s += 1
         if "bundle" in text or "apkm" in text:
             s += 1
         return s

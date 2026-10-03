@@ -37,7 +37,13 @@ def _should_retry(output):
 def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None):
     app_cfg = app_cfg or {}
     files, _name = downloader.download_required(source)
-    cli = utils.find_file(files, suffix=".jar", contains="morphe-cli") or utils.find_file(files, suffix=".jar")
+    # prefer real CLI jar; never pick desktop/gui jars by accident
+    cli = (
+        utils.find_file(files, suffix=".jar", contains="morphe-cli", exclude=["desktop"])
+        or utils.find_file(files, suffix=".jar", contains="cli", exclude=["desktop"])
+        or utils.find_file(files, suffix=".jar", exclude=["desktop"])
+        or utils.find_file(files, suffix=".jar")
+    )
     patches = utils.find_file(files, suffix=".mpp") or utils.find_file(files, contains="patches", suffix=".jar")
     if not cli or not patches:
         logging.error(f"CLI/patches missing for {source}: {[f.name for f in files]}")
@@ -76,7 +82,7 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
                         if ok is None:
                             logging.warning(f"discarding corrupt v2 stock from {plat} {ver}")
                             continue
-                        inp, version, cands = ok, ver, tries
+                        inp, version, cands = ok, utils.base_version(ver), [utils.base_version(x) for x in tries]
                         used = getattr(downloader, f"download_{plat}", None)
                         break
                 if inp:
@@ -94,6 +100,8 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
                 inp, version, cands = None, None, []
                 continue
             inp = ok
+            version = utils.base_version(version or "")
+            cands = [utils.base_version(x) for x in (cands or [])]
             used = fn
             break
     if not inp or not version:

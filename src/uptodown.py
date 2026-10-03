@@ -19,18 +19,18 @@ _UA = {
 }
 
 
-def _fetch(url: str, retries: int = 3):
+def _fetch(url: str, retries: int = 2):
     last = None
     for i in range(retries):
         try:
-            time.sleep(1.5 + random.random() * 2.0)
+            time.sleep(1.0 + random.random() * 1.5)
             r = session.get(url, headers=_UA, timeout=25)
             if r.status_code == 200 and r.content:
                 return r
             last = ValueError(f"status {r.status_code}")
         except Exception as e:
             last = e
-        time.sleep(3 * (i + 1))
+        time.sleep(2 * (i + 1))
     if last:
         raise last
     return None
@@ -92,9 +92,11 @@ def get_latest_version(app_name, cfg):
 
 
 def get_download_link(version, app_name, cfg):
+    from src.utils import base_version
+
     if not version:
         return None
-    want = re.sub(r"\s+", " ", str(version)).strip()
+    want = base_version(version)
     for slug in _slugs(cfg):
         base = f"https://{slug}.en.uptodown.com/android"
         try:
@@ -110,7 +112,7 @@ def get_download_link(version, app_name, cfg):
             if not code:
                 continue
             # scan first pages of version API for exact version row
-            for page in range(1, 4):
+            for page in range(1, 3):
                 api = f"{base}/apps/{code}/versions/{page}"
                 try:
                     r = _fetch(api)

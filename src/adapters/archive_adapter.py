@@ -23,8 +23,10 @@ class ArchiveAdapter(SourceAdapter):
         return get_highest_version(vers)
 
     def link(self, version, app_name, cfg):
+        from src.utils import base_version
+
         dlurl = (cfg.get("dlurl") or "").rstrip("/")
-        v = version.replace(" ", "")
+        v = base_version(version).replace(" ", "")
         arch = (cfg.get("arch") or "all").replace(" ", "")
         # universal accepts any variant, prefer fullest first
         if arch in ("universal", "all", ""):

@@ -200,6 +200,29 @@ def extract_filename(resp, fallback_url: str = "") -> str:
     return Path(name).name
 
 
+def base_version(version: str) -> str:
+    """Strip store variant suffixes (release/arch/dpi) from a version string.
+
+    Some patch lists qualify versions per variant, e.g.
+    18.0.3.954559732-release-arm64-v8a -> 18.0.3.954559732.
+    Download-link builders need the clean form.
+    """
+    v = re.sub(r"\s+", " ", str(version or "")).strip()
+    if not v:
+        return v
+    for _ in range(3):
+        new_v = re.sub(
+            r"[-_](release|arm64-v8a|armeabi-v7a|arm64|armeabi|arm|x86_64|x86|all|universal|nodpi|anydpi|\d{3,4}dpi)$",
+            "",
+            v,
+            flags=re.IGNORECASE,
+        ).strip()
+        if new_v == v:
+            break
+        v = new_v
+    return v or str(version or "").strip()
+
+
 def tidy_apk_name(apk_path: Path) -> Path:
     """Remove store build-number tokens like (1234567) from APK names."""
     try:
