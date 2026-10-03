@@ -14,6 +14,20 @@ Unified Morphe builder — patched APK + Magisk modules with fully automated dai
   </a>
 </p>
 
+Currently builds YouTube and YouTube Music in `universal` arch, both as APK and Magisk module. Configuration is data-driven; no code change is needed to add versions, arches, or modes.
+
+## Contents
+
+- Features
+- Telegram
+- Quick start
+- Configuration overview
+- How it works
+- Workflows overview
+- Requirements
+- Docs
+- License
+
 ## Features
 
 - Patched APK (with MicroG support) + Magisk modules (root, no MicroG needed)
@@ -21,76 +35,95 @@ Unified Morphe builder — patched APK + Magisk modules with fully automated dai
 - Multi-source stock fetcher with fallback: Archive to APKMirror to Uptodown / APKPure / Direct
 - Auto patch planning (MicroG / branding handling for APK vs module)
 - Auto APK signing + signature guard + integrity check
+- Bundle merge via APKEditor for split APKs
 - Smart release cleanup — keep newest 3 releases, prune old files only (releases kept)
-- Telegram release notification with download links (HTML)
-- manifest.json history carried on update branch
+- Telegram release notification with download links (HTML, BD time)
+- Manifest history carried on update branch
 
 ## Telegram
 
 Build updates: https://t.me/morpheautomation
 
+Release notifications include APK links, MicroG note with download link, module links, date in Asia/Dhaka time, and channel footer links.
+
 ## Quick start
 
-1. Edit `unified.json` — enable apps, set `build_modes` (`apk`, `module`)
+1. Edit `unified.json` — enable apps, set `arches` and `build_modes` (`apk`, `module`).
 2. Run manual workflow (`Actions -> Manual Build`) or locally:
-   ```bash
-   ./build.sh
-   # or filtered:
-   APP_NAME=youtube SOURCE=morphe ARCH=universal MODE=apk ./build.sh
-   ```
-3. Get outputs from Releases: `*-morphe-*.apk` + `*-module-*.zip` + `manifest.json`
 
-See `unified.json` for full schema and `docs/ARCHITECTURE.md` for design.
-
-## Configuration
-
-`unified.json` example:
-
-```json
-{
-  "apps": [
-    {
-      "app_name": "youtube",
-      "source": "morphe",
-      "arches": ["universal"],
-      "build_modes": ["apk", "module"],
-      "version": "auto",
-      "dpi": "nodpi",
-      "include_stock": "merged",
-      "module_prop_name": "youtube-morphe"
-    }
-  ]
-}
+```bash
+pip install -r requirements.txt
+mkdir -p build temp build_records
+python -m src
 ```
 
-- `apps/*.json` — per-source stock config (package, dlurl, org)
-- `sources/*.json` — Morphe CLI / patches GitHub releases
-- `patches/*.txt` — `+include` / `-exclude` patch rules (`# default` = use defaults)
+Filtered local run:
+
+```bash
+APP_NAME=youtube SOURCE=morphe ARCH=universal MODE=apk python -m src
+```
+
+Termux:
+
+```bash
+./build-termux.sh
+```
+
+3. Get outputs from Releases:
+   - `youtube-universal-morphe-v*.apk`
+   - `youtube-music-universal-morphe-v*.apk`
+   - `youtube-morphe-module-v*-universal.zip`
+   - `music-morphe-module-v*-universal.zip`
+   - `manifest.json`
+
+## Configuration overview
+
+- `unified.json` — apps, arches, modes, version policy, module metadata. See docs/CONFIGURATION.md.
+- `sources/morphe.json` — Morphe CLI + patches GitHub releases.
+- `apps/archive/*.json`, `apps/apkmirror/*.json` — stock package, dlurl/org, arch, pinned version.
+- `patches/*.txt` — `+include` / `-exclude` rules. Empty (comment only) means defaults + auto MicroG/branding.
+- `sig.txt` — optional signature whitelist.
+- `keystore/unified.jks` — APK signing key, auto-generated in CI if missing.
+
+Example target matrix from default config: 2 apps x 1 arch x 2 modes = 4 targets.
 
 ## How it works
 
 ```
-unified.json -> targets -> download stock -> merge bundle -> strip libs
-  -> patch (morphe-cli) -> sign (apk) / pack module (zip)
-  -> release + manifest + telegram notify + cleanup
+unified.json -> targets -> download CLI/patches -> download stock (fallback chain)
+  -> signature guard -> patch rules -> retry over versions
+  -> bundle merge -> arch strip -> integrity check
+  -> patch -> sign (apk) / pack module (zip)
+  -> record + manifest + release + telegram + cleanup
 ```
 
-- Entry: `python -m src` (`src/__main__.py`, `src/cli.py`, `src/models.py`)
-- Fetch: `src/fetcher.py` + `src/adapters/*` + `src/downloader.py` + `src/apkmirror.py`, `archive.py`, etc.
-- Patch: `src/patch_v2.py` / `src/patcher.py` + `src/utils.py` (versions, signing, integrity)
-- Package: `src/packager.py` / `src/module_builder.py` + `module/*.sh` (on-device installer)
-- Tools: `tools/tool.py` (`audit|note|join|prune`) + `scripts/*` shims
+Details: docs/ARCHITECTURE.md
 
-## Workflows
+## Workflows overview
 
-- `build.yml` — daily `06:00 UTC`: check updates to matrix build to release to manifest to `update` branch to Telegram to cleanup (`--keep-n 3`)
-- `manual.yml` — on-demand single `app/source/arch/mode` build
+- `build.yml` (scheduled daily 06:00 UTC + manual dispatch with force rebuild):
+  check/audit -> matrix build-apps -> release + manifest + telegram + cleanup.
+- `manual.yml` (manual single app/source/arch/mode, including both):
+  build only, upload artifact, no release.
+
+Details: docs/WORKFLOWS.md
 
 ## Requirements
 
-- Python 3.11 (`requirements.txt`: `requests`, `beautifulsoup4`, `PyGithub`)
-- Java 21, `zip/unzip`, `keystore/unified.jks` (auto-generated in CI if missing)
+- Python 3.11 with `requirements.txt` (`requests`, `beautifulsoup4`, `PyGithub`)
+- Java 21 (Temurin in CI)
+- `zip`, `unzip`
+- `GITHUB_TOKEN` for GitHub API (CI provides automatically)
+- Optional for notify: `TG_TOKEN`, `TG_CHAT`, channel link envs
+
+## Docs
+
+- docs/INSTALLATION.md — APK + MicroG + module install guide for end users
+- docs/CONFIGURATION.md — unified.json, sources, apps, patches, signing, env vars
+- docs/WORKFLOWS.md — local build, scheduled/manual CI, audit/record/manifest/prune, telegram format, retention
+- docs/ARCHITECTURE.md — pipeline, modules, invariants, known gaps
+- docs/FAQ.md — troubleshooting and how to add a new app
 
 ## License
 
-See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+See LICENSE and NOTICE.
