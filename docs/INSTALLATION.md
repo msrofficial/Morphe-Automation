@@ -10,11 +10,11 @@ Steps:
 
 1. Uninstall existing YouTube / YT Music updates if signature mismatch occurs (backup data if needed).
 2. Install MicroG RE first (required for Google login):
-   - Download: https://morphe.software/microg
+   - Download: [MicroG RE](https://morphe.software/microg)
    - Install normally, open once, grant required permissions, enable device spoofing if asked.
 3. Install the Morphe APK from GitHub Releases or Telegram channel:
-   - https://github.com/msrofficial/Morphe-Automation/releases
-   - https://t.me/morpheautomation
+   - [GitHub Releases](https://github.com/msrofficial/Morphe-Automation/releases)
+   - [Telegram Channel](https://t.me/morpheautomation)
 4. Open the app, login with Google via MicroG, disable battery optimization for MicroG + YouTube if login drops.
 
 Notes:
@@ -62,7 +62,7 @@ Disable / remove:
 
 - Login fails / spins: reinstall MicroG RE, clear data of MicroG + YouTube, re-login.
 - Battery optimization kills MicroG: set MicroG + patched apps to Unrestricted.
-- Two MicroGs installed: keep only MicroG RE from https://morphe.software/microg.
+- Two MicroGs installed: keep only [MicroG RE](https://morphe.software/microg).
 
 ## 4. Version matching
 

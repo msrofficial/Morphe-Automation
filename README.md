@@ -42,7 +42,7 @@ Currently builds YouTube and YouTube Music in `universal` arch, both as APK and 
 
 ## Telegram
 
-Build updates: https://t.me/morpheautomation
+Build updates: [Morphe Automation Builds](https://t.me/morpheautomation)
 
 Release notifications include APK links, MicroG note with download link, module links, date in Asia/Dhaka time, and channel footer links.
 
@@ -78,7 +78,7 @@ Termux:
 
 ## Configuration overview
 
-- `unified.json` — apps, arches, modes, version policy, module metadata. See docs/CONFIGURATION.md.
+- `unified.json` — apps, arches, modes, version policy, module metadata. See [CONFIGURATION](docs/CONFIGURATION.md).
 - `sources/morphe.json` — Morphe CLI + patches GitHub releases.
 - `apps/archive/*.json`, `apps/apkmirror/*.json` — stock package, dlurl/org, arch, pinned version.
 - `patches/*.txt` — `+include` / `-exclude` rules. Empty (comment only) means defaults + auto MicroG/branding.
@@ -97,7 +97,7 @@ unified.json -> targets -> download CLI/patches -> download stock (fallback chai
   -> record + manifest + release + telegram + cleanup
 ```
 
-Details: docs/ARCHITECTURE.md
+Details: [ARCHITECTURE](docs/ARCHITECTURE.md)
 
 ## Workflows overview
 
@@ -106,7 +106,7 @@ Details: docs/ARCHITECTURE.md
 - `manual.yml` (manual single app/source/arch/mode, including both):
   build only, upload artifact, no release.
 
-Details: docs/WORKFLOWS.md
+Details: [WORKFLOWS](docs/WORKFLOWS.md)
 
 ## Requirements
 
@@ -118,12 +118,12 @@ Details: docs/WORKFLOWS.md
 
 ## Docs
 
-- docs/INSTALLATION.md — APK + MicroG + module install guide for end users
-- docs/CONFIGURATION.md — unified.json, sources, apps, patches, signing, env vars
-- docs/WORKFLOWS.md — local build, scheduled/manual CI, audit/record/manifest/prune, telegram format, retention
-- docs/ARCHITECTURE.md — pipeline, modules, invariants, known gaps
-- docs/FAQ.md — troubleshooting and how to add a new app
+- [INSTALLATION](docs/INSTALLATION.md) — APK + MicroG + module install guide for end users
+- [CONFIGURATION](docs/CONFIGURATION.md) — unified.json, sources, apps, patches, signing, env vars
+- [WORKFLOWS](docs/WORKFLOWS.md) — local build, scheduled/manual CI, audit/record/manifest/prune, telegram format, retention
+- [ARCHITECTURE](docs/ARCHITECTURE.md) — pipeline, modules, invariants, known gaps
+- [FAQ](docs/FAQ.md) — troubleshooting and how to add a new app
 
 ## License
 
-See LICENSE and NOTICE.
+See [LICENSE](LICENSE) and [NOTICE](NOTICE).
