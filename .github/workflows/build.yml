@@ -151,17 +151,31 @@ jobs:
           NL=$'\n'
           MSG="<b>Morphe-Automation $TAG published</b>${NL}"
           MSG+="📅 Date: $(TZ='Asia/Dhaka' date +'%d %B %Y %I:%M %p (UTC+6)')${NL}${NL}"
-          MSG+="<b>📱 YouTube, YT Music &amp; Reddit (APK):</b>${NL}"
-          for f in release-apks/*.apk; do
+          MSG+="<b>📱 YouTube &amp; YT Music (APK):</b>${NL}"
+          for f in release-apks/youtube*.apk; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
             MSG+="- <a href=\"${url}\">${name}</a>${NL}"
           done
-          MSG+="${NL}⚠️ For YouTube / YT Music APKs, you need to install MicroG RE APK. Otherwise you can't login with your Gmail account. Reddit APK needs no MicroG.${NL}"
+          MSG+="${NL}⚠️ For YouTube / YT Music APKs, you need to install MicroG RE APK. Otherwise you can't login with your Gmail account.${NL}"
           MSG+="So download MicroG RE APK: <a href=\"https://morphe.software/microg\">Click Here</a>${NL}${NL}"
-          MSG+="<b>📦 Modules For Rooted Device (No MicroG Needed):</b>${NL}"
-          for f in release-apks/*.zip; do
+          MSG+="<b>📱 Reddit (APK, No MicroG Needed):</b>${NL}"
+          for f in release-apks/reddit*.apk; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
+            MSG+="- <a href=\"${url}\">${name}</a>${NL}"
+          done
+          MSG+="${NL}<b>📦 YouTube &amp; YT Music Modules (Root, No MicroG Needed):</b>${NL}"
+          for f in release-apks/youtube*.zip release-apks/music*.zip; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
+            MSG+="- <a href=\"${url}\">${name}</a>${NL}"
+          done
+          MSG+="${NL}<b>📦 Reddit Module (Root, No MicroG Needed):</b>${NL}"
+          for f in release-apks/reddit*.zip; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
