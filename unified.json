@@ -29,6 +29,18 @@
       "enable_update_checks": false,
       "module_prop_name": "music-morphe",
       "patcher_args": ""
+    },
+    {
+      "app_name": "reddit",
+      "source": "morphe",
+      "arches": ["universal"],
+      "build_modes": ["apk", "module"],
+      "version": "auto",
+      "dpi": "nodpi",
+      "include_stock": "merged",
+      "enable_update_checks": false,
+      "module_prop_name": "reddit-morphe",
+      "patcher_args": ""
     }
   ]
 }

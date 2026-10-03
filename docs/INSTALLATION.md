@@ -58,7 +58,7 @@ Disable / remove:
 - Use Magisk action button to disable (unmounts, keeps files), press again to re-enable.
 - Remove module fully via Magisk Manager, then reboot if mounts persist (`umount_all` in `utils.sh`).
 
-## 3. MicroG FAQ
+## 3. MicroG FAQ (YouTube / YT Music only, Reddit needs no MicroG)
 
 - Login fails / spins: reinstall MicroG RE, clear data of MicroG + YouTube, re-login.
 - Battery optimization kills MicroG: set MicroG + patched apps to Unrestricted.
