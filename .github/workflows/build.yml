@@ -143,6 +143,11 @@ jobs:
           fi
           REPO="${{ github.repository }}"
           TAG="$TAG"
+          INDEX_LINK="${INDEX_LINK:-https://t.me/msrindex}"
+          BUILDS_LINK="${BUILDS_LINK:-https://t.me/morpheautomation}"
+          PATCH_LINK="${PATCH_LINK:-https://t.me/msrpatch}"
+          DISCUSS_LINK="${DISCUSS_LINK:-https://t.me/msrpatchchat}"
+          BACKUP_LINK="${BACKUP_LINK:-https://t.me/msrpatchapps}"
           NL=$'\n'
           MSG="<b>Morphe-Automation $TAG published</b>${NL}"
           MSG+="📅 Date: $(date +'%d %B %Y %I:%M %p UTC')${NL}${NL}"
@@ -162,6 +167,10 @@ jobs:
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
             MSG+="- <a href=\"${url}\">${name}</a>${NL}"
           done
+          MSG+="${NL}━━━━━━━━━━━━━━${NL}"
+          MSG+="<b>📂 Need all files &amp; tutorials in one place?</b>${NL}"
+          MSG+="👉 Join <a href=\"${INDEX_LINK}\">MSR IndeX (All in One)</a>${NL}"
+          MSG+="Join: <a href=\"${BUILDS_LINK}\">Builds</a> | <a href=\"${PATCH_LINK}\">PatcH</a> | <a href=\"${DISCUSS_LINK}\">Discussion</a> | <a href=\"${BACKUP_LINK}\">Backup</a>${NL}"
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" \
             --data-urlencode "disable_web_page_preview=true" \
