@@ -120,6 +120,43 @@ def prune_release(release, keep_file):
             subprocess.run(["gh", "release", "delete-asset", release, a, "-y"], check=False)
 
 
+def prune_old_releases(keep_n=3):
+    """Keep newest N releases intact, delete only files from older releases (keep release shell)."""
+    try:
+        out = subprocess.check_output(
+            ["gh", "release", "list", "--limit", "200", "--json", "tagName,createdAt"],
+            text=True,
+        )
+        releases = json.loads(out)
+    except Exception as e:
+        print(f"list releases failed: {e}")
+        return
+    # newest first
+    try:
+        releases = sorted(releases, key=lambda r: r.get("createdAt", ""), reverse=True)
+    except Exception:
+        pass
+    olds = releases[keep_n:]
+    if not olds:
+        print(f"prune-old: nothing to prune (total={len(releases)}, keep={keep_n})")
+        return
+    for r in olds:
+        tag = r.get("tagName", "").strip()
+        if not tag:
+            continue
+        try:
+            assets = subprocess.check_output(
+                ["gh", "release", "view", tag, "--json", "assets", "--jq", ".assets[].name"],
+                text=True,
+            )
+        except Exception as e:
+            print(f"prune-old {tag}: list failed: {e}")
+            continue
+        for a in [x.strip() for x in assets.splitlines() if x.strip()]:
+            print(f"prune-old {tag}: delete file {a} (release kept)")
+            subprocess.run(["gh", "release", "delete-asset", tag, a, "-y"], check=False)
+
+
 def main():
     ap = argparse.ArgumentParser(prog="tool.py")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -130,6 +167,8 @@ def main():
     pr = sub.add_parser("prune")
     pr.add_argument("--release", default="latest")
     pr.add_argument("--keep-file", default="keep.txt")
+    pr.add_argument("--keep-n", type=int, default=3)
+    pr.add_argument("--skip-old", action="store_true")
     args = ap.parse_args()
     if args.cmd == "audit":
         audit_updates(force=args.force)
@@ -139,6 +178,8 @@ def main():
         join_manifest()
     elif args.cmd == "prune":
         prune_release(args.release, args.keep_file)
+        if not args.skip_old:
+            prune_old_releases(keep_n=args.keep_n)
 
 
 if __name__ == "__main__":
