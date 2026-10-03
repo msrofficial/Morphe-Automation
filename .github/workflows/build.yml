@@ -167,6 +167,7 @@ jobs:
             url="https://github.com/${REPO}/releases/download/${TAG}/${name}"
             MSG+="- <a href=\"${url}\">${name}</a>${NL}"
           done
+          MSG+="Reddit login problem: <a href=\"https://t.me/morpheautomation/9\">solution</a>${NL}"
           MSG+="${NL}<b>📦 YouTube &amp; YT Music Modules (Root, No MicroG Needed):</b>${NL}"
           for f in release-apks/youtube*.zip release-apks/music*.zip; do
             [ -f "$f" ] || continue
