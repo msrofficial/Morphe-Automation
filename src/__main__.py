@@ -72,7 +72,11 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
                             continue
                         dest = Path(f"{app_name}-stock-{plat}-{ver.replace(' ', '')}.apk")
                         _v2fetch.download_url(link, dest)
-                        inp, version, cands = dest, ver, tries
+                        ok = utils.ensure_usable_apk(dest, app_name, ver)
+                        if ok is None:
+                            logging.warning(f"discarding corrupt v2 stock from {plat} {ver}")
+                            continue
+                        inp, version, cands = ok, ver, tries
                         used = getattr(downloader, f"download_{plat}", None)
                         break
                 if inp:

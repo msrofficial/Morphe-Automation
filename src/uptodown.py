@@ -66,10 +66,6 @@ def _detail_ok(resp) -> bool:
         return False
 
 
-def _find_store() -> tuple:
-    return None, None
-
-
 def get_latest_version(app_name, cfg):
     for slug in _slugs(cfg):
         url = f"https://{slug}.en.uptodown.com/android/versions"
@@ -148,7 +144,7 @@ def get_download_link(version, app_name, cfg):
                 link = vsoup.select_one("a.download[href]")
                 if link and link.get("href"):
                     return urljoin(vpage.url, link["href"])
-                return None
+                continue
         except Exception as e:
             logging.debug(f"uptodown link miss {slug}: {e}")
             continue

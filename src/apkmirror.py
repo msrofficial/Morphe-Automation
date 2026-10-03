@@ -51,10 +51,12 @@ def get_download_link(version, app_name, cfg):
     page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{name}-{_slug(version)}-release/")
     soup = BeautifulSoup(page, "html.parser")
     links = []
+    seen = set()
     for sel in ("div.table-row a", "div.table-row.headerFont a"):
         for a in soup.select(sel):
             href = a.get("href", "")
-            if "/apk/" in href and "download" not in href and href not in links:
+            if "/apk/" in href and "download" not in href and href not in seen:
+                seen.add(href)
                 links.append((href, _row_text(a)))
         if links:
             break
