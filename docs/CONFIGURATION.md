@@ -117,7 +117,7 @@ APKMirror example (`apps/apkmirror/youtube.json`):
 - `dlurl`: archive directory listing or direct file URL.
 - Missing platform file is synthesized from another platform if `package` is known (`_load_app_config`).
 
-Current status: `apkpure` and `uptodown` fetchers are stubs returning `None` (`src/apkpure.py`, `src/uptodown.py`). Effective sources are `archive` (primary) and `apkmirror` (fallback).
+Current status: all fetchers are functional (own implementations). Order is `archive` (primary), `apkmirror` (fallback with arch/dpi preference), then `uptodown`, `apkpure`, `direct`.
 
 ## 4. patches/*.txt
 

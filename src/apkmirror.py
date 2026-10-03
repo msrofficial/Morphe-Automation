@@ -31,25 +31,59 @@ def get_latest_version(app_name, cfg):
     return vers[0] if vers else None
 
 
+def _slug(version: str) -> str:
+    return str(version).strip().replace(" ", "-").replace(".", "-")
+
+
+def _row_text(a) -> str:
+    try:
+        row = a.find_parent("div", class_="table-row")
+        return row.get_text(" ", strip=True).lower() if row else ""
+    except Exception:
+        return ""
+
+
 def get_download_link(version, app_name, cfg):
-    # Simplified: search uploads page then first variant page.
-    # Full dpi/arch filtering happens after download attempt; caller retries.
     org = cfg.get("org", "")
     name = cfg.get("name", app_name)
-    ver_slug = version.replace(" ", "-").replace(".", "-")
-    page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{name}-{ver_slug}-release/")
+    arch = str(cfg.get("arch", "universal")).lower()
+    dpi = str(cfg.get("dpi", "nodpi")).lower()
+    page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{name}-{_slug(version)}-release/")
     soup = BeautifulSoup(page, "html.parser")
-    # find first APK/BUNDLE row link
-    for a in soup.select("div.table-row a"):
-        href = a.get("href", "")
-        if "/apk/" in href and "download" not in href:
+    links = []
+    for sel in ("div.table-row a", "div.table-row.headerFont a"):
+        for a in soup.select(sel):
+            href = a.get("href", "")
+            if "/apk/" in href and "download" not in href and href not in links:
+                links.append((href, _row_text(a)))
+        if links:
+            break
+    # own preference: nodpi/universal rows first, then requested arch
+    def score(item):
+        _, text = item
+        s = 0
+        if "nodpi" in text or dpi in text:
+            s += 2
+        if "universal" in text or "all" in text or arch in text:
+            s += 2
+        if "bundle" in text or "apkm" in text:
+            s += 1
+        return s
+    links.sort(key=score, reverse=True)
+    for href, _ in links:
+        try:
             dl_page = _page("https://www.apkmirror.com" + href)
-            s2 = BeautifulSoup(dl_page, "html.parser")
-            btn = s2.select_one("a.btn")
-            if btn and btn.get("href"):
+        except Exception:
+            continue
+        s2 = BeautifulSoup(dl_page, "html.parser")
+        btn = s2.select_one("a.btn")
+        if btn and btn.get("href"):
+            try:
                 dl2 = _page("https://www.apkmirror.com" + btn["href"])
-                s3 = BeautifulSoup(dl2, "html.parser")
-                fin = s3.select_one("span > a[rel=nofollow]")
-                if fin and fin.get("href"):
-                    return "https://www.apkmirror.com" + fin["href"]
+            except Exception:
+                continue
+            s3 = BeautifulSoup(dl2, "html.parser")
+            fin = s3.select_one("span > a[rel=nofollow]") or s3.select_one("a[rel=nofollow]")
+            if fin and fin.get("href"):
+                return "https://www.apkmirror.com" + fin["href"]
     return None

@@ -12,8 +12,8 @@ src/
   fetcher.py       v2 registry (SourceAdapter, register, get_adapter, download_url)
   downloader.py    legacy download_required, github_release, download_platform, apkeditor
   apkmirror.py     legacy HTML fetcher
-  apkpure.py       stub (returns None)
-  uptodown.py      stub (returns None)
+  apkpure.py       own APKPure listing + download-page fetcher
+  uptodown.py      own store-page + versions-API fetcher
   archive.py       legacy archive.org fetcher
   direct.py        direct URL fetcher
   patcher.py       legacy rule engine + microg/branding detect + build_command
@@ -60,6 +60,6 @@ module/
 
 ## Known gaps
 
-- `apkpure` / `uptodown` are stubs; only `archive` + `apkmirror` are functional.
+- All stock sources use own implementations; no vendored scraper code is used.
 - `ARCHITECTURE.md` previously described `core/fetch,patch,package` paths that do not exist; actual code is flat under `src/`. This file supersedes that sketch.
 - Duplicate logic exists intentionally (patcher/patch_v2, packager/module_builder, apkmirror/adapter) for safe migration. Do not delete legacy until v2 is default in CI.

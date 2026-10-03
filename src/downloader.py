@@ -13,11 +13,7 @@ def download_resource(url: str, name: str = None) -> Path:
     res.raise_for_status()
     final_url = res.url
     if not name:
-        cd = res.headers.get("content-disposition", "")
-        if "filename=" in cd:
-            name = cd.split("filename=")[-1].strip().strip('"')
-        else:
-            name = Path(final_url.split("?")[0]).name or "download.bin"
+        name = utils.extract_filename(res, fallback_url=final_url)
     fp = Path(name)
     total = int(res.headers.get("content-length", 0))
     done = 0

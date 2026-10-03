@@ -181,6 +181,63 @@ def check_apk_integrity(apk_path: Path) -> bool:
         return False
 
 
+def extract_filename(resp, fallback_url: str = "") -> str:
+    """Pick a safe output name from headers or URL (own helper)."""
+    cd = ""
+    try:
+        cd = resp.headers.get("content-disposition", "")
+    except Exception:
+        cd = ""
+    if "filename=" in cd:
+        name = cd.split("filename=")[-1].strip().strip('"').strip("'")
+        name = name.split(";")[0].strip()
+        if name:
+            return Path(name).name
+    base = (fallback_url or getattr(resp, "url", "") or "").split("?")[0]
+    name = Path(base).name.strip() if base else ""
+    if not name:
+        name = "download.bin"
+    return Path(name).name
+
+
+def tidy_apk_name(apk_path: Path) -> Path:
+    """Remove store build-number tokens like (1234567) from APK names."""
+    try:
+        name = apk_path.name
+        cleaned = re.sub(r"\(\d+\)", "", name)
+        cleaned = re.sub(r"-\d{6,}_", "_", cleaned)
+        if cleaned != name and cleaned:
+            target = apk_path.with_name(cleaned)
+            try:
+                target.unlink(missing_ok=True)
+            except Exception:
+                pass
+            apk_path.rename(target)
+            return target
+    except Exception as e:
+        logging.debug(f"name tidy skipped: {e}")
+    return apk_path
+
+
+def ensure_usable_apk(apk_path: Path, app_name: str = "", version: str = "") -> Optional[Path]:
+    """Return path if it is a usable APK, else None (caller tries next source)."""
+    if not apk_path:
+        return None
+    try:
+        apk_path = tidy_apk_name(Path(apk_path))
+    except Exception:
+        pass
+    tag = f"{app_name} {version}".strip()
+    if not check_apk_integrity(apk_path):
+        logging.warning(f"unusable apk discarded {apk_path.name} {tag}")
+        try:
+            apk_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return None
+    return apk_path
+
+
 def check_sig(apksigner_jar: Optional[str], apk: Path, pkg: str, sig_file: Path = Path("sig.txt")) -> bool:
     """Return True if signature matches whitelist or no whitelist entry."""
     if not sig_file.exists():

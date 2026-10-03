@@ -4,7 +4,7 @@
 
 - Check `apps/archive/<app>.json` `dlurl` is reachable. Archive listing must contain `<version>-<arch>.apk` style names.
 - APKMirror HTML selectors change often. If `apkmirror_adapter` and legacy `apkmirror.py` both fail, pin `version` in `apps/*/<app>.json` or `unified.json` to a known-good stock.
-- `updown` / `apkpure` always fail by design (stubs). Do not rely on them in source order.
+- If `uptodown` / `apkpure` fail for an app, the pipeline automatically tries the next source in order. Check the app slug (`name`) and `package` in `apps/*/*.json` first.
 
 ## list-versions returns empty
 

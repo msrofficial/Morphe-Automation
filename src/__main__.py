@@ -84,6 +84,12 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
             continue
         inp, version, cands = fn(app_name, str(cli), str(patches), arch)
         if inp:
+            ok = utils.ensure_usable_apk(inp, app_name, version or "")
+            if ok is None:
+                logging.warning(f"discarding corrupt stock from {plat}, trying next source")
+                inp, version, cands = None, None, []
+                continue
+            inp = ok
             used = fn
             break
     if not inp or not version:
@@ -166,7 +172,8 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
                 utils.strip_zip_entries(inp, ["lib/x86/*", "lib/x86_64/*", "lib/arm64-v8a/*"])
             else:
                 utils.strip_zip_entries(inp, ["lib/x86/*", "lib/x86_64/*"])
-        if not utils.check_apk_integrity(inp):
+        inp = utils.ensure_usable_apk(inp, app_name, version)
+        if not inp:
             logging.error("bad apk integrity")
             return None
         out = Path(f"{app_name}-{arch}-patch-v{version}.apk")
@@ -185,9 +192,17 @@ def run_build(app_name, source, arch="universal", build_mode="apk", app_cfg=None
             final = Path(f"{app_name}-{arch}-morphe-v{version}.apk")
             apksigner = utils.find_apksigner()
             if apksigner:
-                utils.run_process([apksigner, "sign", "--ks", "keystore/unified.jks", "--ks-pass", "pass:morphe",
-                                   "--key-pass", "pass:morphe", "--ks-key-alias", "morphe",
-                                   "--in", str(out), "--out", str(final)])
+                try:
+                    utils.run_process([apksigner, "sign",
+                                       "--ks", "keystore/unified.jks", "--ks-pass", "pass:morphe",
+                                       "--key-pass", "pass:morphe", "--ks-key-alias", "morphe",
+                                       "--in", str(out), "--out", str(final)])
+                except Exception as e:
+                    logging.warning(f"standard sign failed, retry with min-sdk 21: {e}")
+                    utils.run_process([apksigner, "sign", "--min-sdk-version", "21",
+                                       "--ks", "keystore/unified.jks", "--ks-pass", "pass:morphe",
+                                       "--key-pass", "pass:morphe", "--ks-key-alias", "morphe",
+                                       "--in", str(out), "--out", str(final)])
                 out.unlink(missing_ok=True)
             else:
                 out.rename(final)
