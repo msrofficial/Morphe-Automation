@@ -150,7 +150,7 @@ jobs:
           BACKUP_LINK="${BACKUP_LINK:-https://t.me/msrpatchapps}"
           NL=$'\n'
           MSG="<b>Morphe-Automation $TAG published</b>${NL}"
-          MSG+="📅 Date: $(date +'%d %B %Y %I:%M %p UTC')${NL}${NL}"
+          MSG+="📅 Date: $(TZ='Asia/Dhaka' date +'%d %B %Y %I:%M %p BST')${NL}${NL}"
           MSG+="<b>📱 YouTube &amp; YT Music (APK):</b>${NL}"
           for f in release-apks/*.apk; do
             [ -f "$f" ] || continue
