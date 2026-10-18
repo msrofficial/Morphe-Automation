@@ -48,9 +48,12 @@ def _row_text(a) -> str:
 def get_download_link(version, app_name, cfg):
     org = cfg.get("org", "")
     name = cfg.get("name", app_name)
+    # version pages may use a longer slug than the app directory (e.g. gboard
+    # dir is /gboard/ but pages are /gboard-the-google-keyboard-<ver>-release/)
+    page_slug = cfg.get("app_slug") or name
     arch = str(cfg.get("arch", "universal")).lower()
     dpi = str(cfg.get("dpi", "nodpi")).lower()
-    page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{name}-{_slug(version)}-release/")
+    page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{page_slug}-{_slug(version)}-release/")
     soup = BeautifulSoup(page, "html.parser")
     links = []
     seen = set()
@@ -73,8 +76,9 @@ def get_download_link(version, app_name, cfg):
             s += 2
         elif arch in ("universal", "all", "") and "arm64-v8a" in text:
             s += 1
+        # prefer a plain full APK over split bundles/apkm
         if "bundle" in text or "apkm" in text:
-            s += 1
+            s -= 1
         return s
     links.sort(key=score, reverse=True)
     for href, _ in links:
