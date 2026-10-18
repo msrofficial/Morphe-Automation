@@ -56,30 +56,48 @@ def get_latest_version(app_name, cfg):
     return None
 
 
-def get_download_link(version, app_name, cfg):
+def _version_forms(version, cfg):
+    """APKPure keys downloads by the full store version (e.g.
+    18.0.3.954559732-release-arm64-v8a); also try the stripped base."""
     from src.utils import base_version
 
+    raw = str(version or "").strip()
+    base = base_version(raw)
+    arch = str(cfg.get("arch") or "").strip().lower()
+    archs = ["arm64-v8a", "armeabi-v7a"] if arch in ("", "universal", "all") else [arch]
+    forms = []
+    for v in (raw, base):
+        if not v:
+            continue
+        for cand in [v] + [f"{v}-release-{a}" for a in archs]:
+            if cand not in forms:
+                forms.append(cand)
+    return forms
+
+
+def get_download_link(version, app_name, cfg):
     name = (cfg.get("name") or app_name or "").strip()
     pkg = (cfg.get("package") or "").strip()
     if not version or not name or not pkg:
         return None
-    url = f"https://apkpure.com/{name}/{pkg}/download/{base_version(version)}"
-    try:
-        r = _load(url)
-    except Exception as e:
-        logging.debug(f"apkpure link miss {app_name} {version}: {e}")
-        return None
-    try:
-        soup = BeautifulSoup(r.content, "html.parser")
-        a = soup.find("a", id="download_link")
-        if a and a.get("href"):
-            href = a["href"].strip()
-            if href.startswith("/"):
-                return "https://apkpure.com" + href
-            return href
-        fast = soup.select_one("a[href*='download'][href$='.apk']")
-        if fast and fast.get("href"):
-            return fast["href"]
-    except Exception as e:
-        logging.debug(f"apkpure link parse miss {app_name}: {e}")
+    for form in _version_forms(version, cfg):
+        url = f"https://apkpure.com/{name}/{pkg}/download/{form}"
+        try:
+            r = _load(url)
+        except Exception as e:
+            logging.debug(f"apkpure link miss {app_name} {form}: {e}")
+            continue
+        try:
+            soup = BeautifulSoup(r.content, "html.parser")
+            a = soup.find("a", id="download_link")
+            if a and a.get("href"):
+                href = a["href"].strip()
+                if href.startswith("/"):
+                    return "https://apkpure.com" + href
+                return href
+            fast = soup.select_one("a[href*='download'][href$='.apk']")
+            if fast and fast.get("href"):
+                return fast["href"]
+        except Exception as e:
+            logging.debug(f"apkpure link parse miss {app_name}: {e}")
     return None

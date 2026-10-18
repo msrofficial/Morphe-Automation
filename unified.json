@@ -45,7 +45,7 @@
     {
       "app_name": "gboard",
       "source": "gboard",
-      "arches": ["universal"],
+      "arches": ["arm64-v8a"],
       "build_modes": ["apk"],
       "version": "auto",
       "dpi": "nodpi",
