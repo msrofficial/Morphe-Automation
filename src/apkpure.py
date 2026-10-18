@@ -12,9 +12,25 @@ from src.session import session
 
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Referer": "https://apkpure.com/",
+    "Upgrade-Insecure-Requests": "1",
 }
+
+_warmed = False
+
+
+def _warm():
+    """Prime cookies/clearance on the site root before deep pages."""
+    global _warmed
+    if _warmed:
+        return
+    _warmed = True
+    try:
+        session.get("https://apkpure.com/", headers=_HEADERS, timeout=20)
+    except Exception as e:
+        logging.info(f"apkpure warm-up failed: {e}")
 
 
 def _load(url: str, retries: int = 2):
@@ -36,11 +52,12 @@ def get_latest_version(app_name, cfg):
     pkg = (cfg.get("package") or "").strip()
     if not name or not pkg:
         return None
+    _warm()
     url = f"https://apkpure.com/{name}/{pkg}/versions"
     try:
         r = _load(url)
     except Exception as e:
-        logging.debug(f"apkpure latest miss {app_name}: {e}")
+        logging.info(f"apkpure latest miss {app_name}: {e}")
         return None
     try:
         soup = BeautifulSoup(r.content, "html.parser")
@@ -80,12 +97,13 @@ def get_download_link(version, app_name, cfg):
     pkg = (cfg.get("package") or "").strip()
     if not version or not name or not pkg:
         return None
+    _warm()
     for form in _version_forms(version, cfg):
         url = f"https://apkpure.com/{name}/{pkg}/download/{form}"
         try:
             r = _load(url)
         except Exception as e:
-            logging.debug(f"apkpure link miss {app_name} {form}: {e}")
+            logging.info(f"apkpure link miss {app_name} {form}: {e}")
             continue
         try:
             soup = BeautifulSoup(r.content, "html.parser")
@@ -93,11 +111,18 @@ def get_download_link(version, app_name, cfg):
             if a and a.get("href"):
                 href = a["href"].strip()
                 if href.startswith("/"):
-                    return "https://apkpure.com" + href
+                    href = "https://apkpure.com" + href
+                logging.info(f"apkpure link ok {app_name} {form} -> {href[:120]}")
                 return href
             fast = soup.select_one("a[href*='download'][href$='.apk']")
             if fast and fast.get("href"):
+                logging.info(f"apkpure fallback link ok {app_name} {form}")
                 return fast["href"]
+            logging.info(
+                f"apkpure page ok but no link {app_name} {form} "
+                f"(status {r.status_code}, len {len(r.content)}, title "
+                f"{soup.title.get_text(strip=True) if soup.title else '?'!r})"
+            )
         except Exception as e:
-            logging.debug(f"apkpure link parse miss {app_name}: {e}")
+            logging.info(f"apkpure link parse miss {app_name}: {e}")
     return None
