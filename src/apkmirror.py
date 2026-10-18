@@ -55,46 +55,58 @@ def get_download_link(version, app_name, cfg):
     dpi = str(cfg.get("dpi", "nodpi")).lower()
     page = _page(f"https://www.apkmirror.com/apk/{org}/{name}/{page_slug}-{_slug(version)}-release/")
     soup = BeautifulSoup(page, "html.parser")
+
+    def _abs(href):
+        if not href:
+            return ""
+        if href.startswith("//"):
+            return "https:" + href
+        if href.startswith("http"):
+            return href if "apkmirror.com" in href else ""
+        return "https://www.apkmirror.com" + href
+
     links = []
     seen = set()
-    for sel in ("div.table-row a", "div.table-row.headerFont a"):
-        for a in soup.select(sel):
-            href = a.get("href", "")
-            if "/apk/" in href and "download" not in href and href not in seen:
-                seen.add(href)
-                links.append((href, _row_text(a)))
-        if links:
-            break
-    # own preference: nodpi/universal rows first, then requested arch.
-    # some apps (e.g. gboard) ship no universal rows: fall back to arm64.
+    for a in soup.select("div.table-row a"):
+        href = a.get("href", "")
+        # variant rows link to .../<variant>-android-apk-download/ (skip #comments dup)
+        if href.startswith("/apk/") and "-android-apk-download/" in href and href not in seen:
+            seen.add(href)
+            links.append((href, _row_text(a)))
+    # own preference: nodpi/requested arch first, plain release APK over beta/lite/bundle
     def score(item):
         _, text = item
         s = 0
         if "nodpi" in text or dpi in text:
             s += 2
-        if "universal" in text or "all" in text or arch in text:
+        if arch and arch in text:
+            s += 3
+        elif "universal" in text or "all" in text:
             s += 2
         elif arch in ("universal", "all", "") and "arm64-v8a" in text:
             s += 1
-        # prefer a plain full APK over split bundles/apkm
         if "bundle" in text or "apkm" in text:
             s -= 1
+        if "beta" in text:
+            s -= 2
+        if "lite" in text:
+            s -= 3
         return s
     links.sort(key=score, reverse=True)
     for href, _ in links:
         try:
-            dl_page = _page("https://www.apkmirror.com" + href)
+            dl_page = _page(_abs(href))
         except Exception:
             continue
         s2 = BeautifulSoup(dl_page, "html.parser")
         btn = s2.select_one("a.btn")
         if btn and btn.get("href"):
             try:
-                dl2 = _page("https://www.apkmirror.com" + btn["href"])
+                dl2 = _page(_abs(btn["href"]))
             except Exception:
                 continue
             s3 = BeautifulSoup(dl2, "html.parser")
             fin = s3.select_one("span > a[rel=nofollow]") or s3.select_one("a[rel=nofollow]")
             if fin and fin.get("href"):
-                return "https://www.apkmirror.com" + fin["href"]
+                return _abs(fin["href"])
     return None
